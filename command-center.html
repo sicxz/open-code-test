@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Green AI Data Centers — Studio Command Center</title>
+  <style>
+    :root {
+      --bg: #F4F8FA;
+      --bg-subtle: #E6F2F3;
+      --bg-inset: #CDE2E5;
+      --border: #A1B3B7;
+      --border-strong: #6D7E86;
+      --text: #0F1418;
+      --text-secondary: #384954;
+      --text-tertiary: #6D7E86;
+      --green: #37954F;
+      --green-subtle: #DAFBE1;
+      --green-text: #1A6B2E;
+      --teal: #55A2AD;
+      --teal-subtle: #CDE2E5;
+      --teal-text: #2F7A85;
+      --earth: #A1986E;
+      --earth-subtle: #F2F3EE;
+      --earth-text: #7A7348;
+      --danger: #B7142E;
+      --danger-subtle: #FFEBE9;
+
+      --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      --font-mono: 'SFMono-Regular', 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+
+      --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+      --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px;
+
+      --max-width: 1080px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0F1418;
+        --bg-subtle: #1A2628;
+        --bg-inset: #2F4444;
+        --border: #384954;
+        --border-strong: #55A2AD;
+        --text: #E6F2F3;
+        --text-secondary: #A1B3B7;
+        --text-tertiary: #6D7E86;
+        --green: #45A45B;
+        --green-subtle: #1A3D24;
+        --green-text: #7FDE45;
+        --teal: #55A2AD;
+        --teal-subtle: #1A3D42;
+        --teal-text: #88D4DE;
+        --earth: #A1986E;
+        --earth-subtle: #2F2D24;
+        --earth-text: #C4BA88;
+        --danger: #F04E64;
+        --danger-subtle: #3D0C0C;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page { max-width: var(--max-width); margin: 0 auto; padding: var(--sp-7) var(--sp-5); }
+    .section { margin-bottom: var(--sp-8); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--sp-5); }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--sp-4); }
+
+    a { color: var(--teal-text); text-decoration: underline; text-underline-offset: 2px; }
+    a:hover { color: var(--teal); }
+
+    .section-counter {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      margin-bottom: var(--sp-5);
+      padding-bottom: var(--sp-3);
+      border-bottom: 3px solid var(--text);
+    }
+    .section-counter__number {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--green);
+      flex-shrink: 0;
+    }
+    .section-counter__rule {
+      flex-grow: 1;
+      height: 1px;
+      background: var(--border-strong);
+    }
+    .section-counter__label {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .sublabel-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      margin-top: 24px;
+    }
+    .sublabel-row__rule {
+      flex-grow: 1;
+      height: 1px;
+      background: var(--border-strong);
+    }
+    .sublabel-row__label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+
+    .module-header {
+      border: 3px solid var(--text);
+      padding: var(--sp-6);
+      margin-bottom: var(--sp-6);
+      position: relative;
+    }
+    .module-header__top {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--sp-5);
+    }
+    .module-header__number {
+      font-family: var(--font-mono);
+      font-size: 72px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--green);
+      flex-shrink: 0;
+      margin-top: -4px;
+    }
+    .module-header__content { flex-grow: 1; min-width: 0; }
+    .module-header__label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: var(--sp-1);
+    }
+    .module-header__title {
+      font-family: var(--font-body);
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .module-header__rule {
+      width: 100%;
+      height: 3px;
+      background: var(--text);
+      margin: var(--sp-4) 0;
+    }
+    .module-header__meta {
+      display: flex;
+      gap: var(--sp-5);
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .module-header__meta-item {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .banner {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      margin-bottom: var(--sp-4);
+      overflow: hidden;
+    }
+    .banner__slug {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: var(--sp-3) var(--sp-4);
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      min-width: 100px;
+      justify-content: center;
+    }
+    .banner__body {
+      padding: var(--sp-3) var(--sp-4);
+      font-size: 14px;
+      line-height: 1.5;
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      color: var(--text);
+    }
+    .banner--green { border-color: var(--green); }
+    .banner--green .banner__slug { background: var(--green); color: #FFF; }
+    .banner--green .banner__body { background: var(--green-subtle); }
+    .banner--teal { border-color: var(--teal); }
+    .banner--teal .banner__slug { background: var(--teal); color: #FFF; }
+    .banner--teal .banner__body { background: var(--teal-subtle); }
+    .banner--earth { border-color: var(--earth); }
+    .banner--earth .banner__slug { background: var(--earth); color: #FFF; }
+    .banner--earth .banner__body { background: var(--earth-subtle); }
+
+    .badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border: 2px solid;
+      background: transparent;
+    }
+    .badge--default { color: var(--text-secondary); border-color: var(--border-strong); }
+    .badge--green { color: var(--green-text); border-color: var(--green); }
+    .badge--teal { color: var(--teal-text); border-color: var(--teal); }
+    .badge--earth { color: var(--earth-text); border-color: var(--earth); }
+
+    .card {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: var(--sp-5);
+    }
+    .card-bordered {
+      background: var(--bg);
+      border: 3px solid var(--text);
+      padding: var(--sp-5);
+    }
+    .card--green {
+      border-left: 4px solid var(--green);
+    }
+    .card--teal {
+      border-left: 4px solid var(--teal);
+    }
+    .card--earth {
+      border-left: 4px solid var(--earth);
+    }
+
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: var(--sp-3) 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-row:last-child { border-bottom: none; }
+    .data-row__label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+    .data-row__value {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      text-align: right;
+    }
+
+    .table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .table th {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      text-align: left;
+      padding: var(--sp-2) var(--sp-3);
+      border-bottom: 3px solid var(--text);
+    }
+    .table td {
+      padding: var(--sp-3);
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: top;
+    }
+    .table tr:hover td { background: var(--bg-subtle); }
+
+    .blockquote {
+      border-left: 4px solid var(--teal);
+      padding-left: var(--sp-4);
+      margin: var(--sp-4) 0;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .h1 { font-family: var(--font-body); font-size: 36px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; color: var(--text); }
+    .h2 { font-family: var(--font-body); font-size: 24px; font-weight: 700; line-height: 1.3; color: var(--text); }
+    .h3 { font-family: var(--font-mono); font-size: 13px; font-weight: 700; line-height: 1.4; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-secondary); }
+    .h4 { font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-secondary); }
+    .body-sm { font-size: 14px; line-height: 1.5; color: var(--text-secondary); }
+    .meta { font-family: var(--font-mono); font-size: 12px; color: var(--text-tertiary); }
+    .label { font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-secondary); }
+    p { margin-bottom: var(--sp-4); }
+    ul, ol { padding-left: var(--sp-5); margin-bottom: var(--sp-4); }
+    li { margin-bottom: var(--sp-2); line-height: 1.6; }
+    .divider { height: 1px; background: var(--border); margin: var(--sp-5) 0; }
+    .divider--heavy { height: 3px; background: var(--text); margin: var(--sp-6) 0; }
+
+    .link-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: var(--sp-3);
+    }
+    .link-item {
+      display: block;
+      padding: var(--sp-3) var(--sp-4);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .link-item:hover {
+      border-color: var(--teal);
+      background: var(--teal-subtle);
+    }
+    .link-item__title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: var(--sp-1);
+    }
+
+    details {
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      margin-bottom: var(--sp-3);
+      overflow: hidden;
+    }
+    summary {
+      padding: var(--sp-3) var(--sp-4);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--bg-subtle);
+      color: var(--text);
+      user-select: none;
+    }
+    summary:hover { background: var(--bg-inset); }
+    details[open] summary { border-bottom: 1px solid var(--border); }
+    details > div { padding: var(--sp-4); }
+
+    .image-frame {
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      background: var(--bg-subtle);
+    }
+    .image-frame img {
+      width: 100%;
+      display: block;
+    }
+    .image-frame__caption {
+      padding: var(--sp-2) var(--sp-3);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-tertiary);
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    @media (max-width: 720px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .module-header__top { flex-direction: column; }
+      .module-header__number { font-size: 48px; }
+      .module-header__title { font-size: 22px; }
+      .banner { flex-direction: column; }
+      .banner__slug { min-width: unset; padding: var(--sp-2) var(--sp-3); }
+    }
+  </style>
+</head>
+<body>
+
+<main class="page">
+
+  <header class="section" style="margin-bottom: var(--sp-7);">
+    <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green); margin-bottom: var(--sp-3);">DESN 374 · AI + Design Studio · Spring 2026</div>
+    <div style="display: flex; align-items: flex-start; gap: var(--sp-5); flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 280px;">
+        <h1 style="font-size: 48px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; margin-bottom: var(--sp-3);">
+          Green AI<br>
+          <span style="color: var(--green);">Data Centers</span>
+        </h1>
+        <div style="display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-4);">
+          <span style="font-family: var(--font-mono); font-size: 14px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--teal);">Energy</span>
+          <span style="width: 2px; height: 16px; background: var(--border-strong);"></span>
+          <span style="font-family: var(--font-mono); font-size: 14px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--earth);">Land</span>
+          <span style="width: 2px; height: 16px; background: var(--border-strong);"></span>
+          <span style="font-family: var(--font-mono); font-size: 14px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-tertiary);">Water</span>
+        </div>
+        <p style="font-size: 16px; color: var(--text-secondary); max-width: 560px; margin-bottom: var(--sp-3);">
+          Confronting the physical reality of AI at its source — investigating the energy demands, water consumption, and hardware waste of data centers to map a tactical shift toward green infrastructure.
+        </p>
+      </div>
+      <div style="display: flex; gap: var(--sp-2); flex-wrap: wrap; flex-shrink: 0;">
+        <span class="badge badge--green">Research Phase</span>
+        <span class="badge badge--teal">In Progress</span>
+        <span class="meta" style="align-self: center;">Updated 2026-05-27</span>
+      </div>
+    </div>
+    <div style="height: 3px; background: var(--green); margin-top: var(--sp-5);"></div>
+  </header>
+
+  <section class="section">
+    <div class="section-counter">
+      <span class="section-counter__number">01</span>
+      <span class="section-counter__label">Project Identity</span>
+      <span class="section-counter__rule"></span>
+    </div>
+
+    <div class="module-header">
+      <div class="module-header__top">
+        <div class="module-header__number">?</div>
+        <div class="module-header__content">
+          <div class="module-header__label">Research Question</div>
+          <div class="module-header__title">How can we re-engineer the physical infrastructure of AI data centers — addressing hardware circularity, water depletion, and energy consumption — to shift from "Red AI" to "Green AI"?</div>
+        </div>
+      </div>
+      <div class="module-header__rule"></div>
+      <div class="module-header__meta">
+        <span class="module-header__meta-item">Territory: Green AI Data Centers</span>
+        <span class="module-header__meta-item">Outcomes: Interactive web · Data diagram · Game</span>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top: var(--sp-4);">
+      <div class="card card--green">
+        <h4 style="margin-bottom: var(--sp-2);">Curiosity Statement</h4>
+        <p class="body-sm" style="margin-bottom: 0;">
+          By investigating the massive energy demands of data centers, I aim to map out a tactical shift toward green infrastructure, proving that sustainable system design is not just a requirement for human and environmental health, but a fundamental necessity for corporate survival.
+        </p>
+      </div>
+      <div class="card card--teal">
+        <h4 style="margin-bottom: var(--sp-2);">Why It Matters</h4>
+        <p class="body-sm" style="margin-bottom: 0;">
+          AI integration is inevitable, but its physical toll is unsustainable and hidden. Data centers consume 70–80% of withdrawn water through cooling. AI chips last 1–3 years and defy recycling. By 2030, 50 million metric tons of e-waste annually. A tactical shift is a survival imperative — not just an ethical choice.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-counter">
+      <span class="section-counter__number">02</span>
+      <span class="section-counter__label">Research Map</span>
+      <span class="section-counter__rule"></span>
+    </div>
+
+    <p class="body-sm" style="margin-bottom: var(--sp-5);">Six information interactions across the quarter, progressing from infrastructure fundamentals to systemic solutions. Each cycle deepened both technical understanding and critical framing.</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); margin-bottom: var(--sp-5);">
+      <div class="image-frame">
+        <img src="Important%20infographics/image.png" alt="NotebookLM infographic — AI Data Center Overview" style="border-bottom: 1px solid var(--border);">
+        <div class="image-frame__caption">NotebookLM infographic — AI Data Center infrastructure overview</div>
+      </div>
+      <div class="image-frame">
+        <img src="Important%20infographics/image%20(1).png" alt="NotebookLM infographic — Water and Energy in AI" style="border-bottom: 1px solid var(--border);">
+        <div class="image-frame__caption">NotebookLM infographic — Water depletion &amp; energy consumption</div>
+      </div>
+      <div class="image-frame">
+        <img src="Important%20infographics/image%20(2).png" alt="NotebookLM infographic — E-Waste and Hardware" style="border-bottom: 1px solid var(--border);">
+        <div class="image-frame__caption">NotebookLM infographic — E-waste &amp; hardware circularity</div>
+      </div>
+      <div class="image-frame">
+        <img src="Important%20infographics/image%20(3).png" alt="NotebookLM infographic — Green AI Solutions" style="border-bottom: 1px solid var(--border);">
+        <div class="image-frame__caption">NotebookLM infographic — Green AI solutions &amp; policy</div>
+      </div>
+    </div>
+
+    <details>
+      <summary>Interaction #1 — AI Infrastructure Basics</summary>
+      <div>
+        <p class="body-sm"><strong>Key sources:</strong> FPT AI Factory, Cisco, IBM.</p>
+        <p class="body-sm"><strong>Key takeaway:</strong> AI infrastructure is factory-dependent — GPUs, TPUs, HBM, and MLOps form the stack. Companies prioritize performance over sustainability because of the race toward Agentic AI. First realization that the problem is structural, not technical.</p>
+        <a href="https://notebooklm.google.com/notebook/5adf3ecc-4766-42c6-b368-74aa5a1ec004/artifact/96737e33-7459-42d7-8e50-27374f4124c9" target="_blank" class="meta" style="display: block;">NotebookLM — Notebook #1</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>Interaction #2 — Energy, E-Waste &amp; Embodied Carbon</summary>
+      <div>
+        <p class="body-sm"><strong>Key sources:</strong> Global Electricity, MIT News, UN Global E-Waste Monitor 2024.</p>
+        <p class="body-sm"><strong>Key takeaway:</strong> Embodied carbon in AI chips is the blind spot. Chips last 1–3 years, use copper/cobalt/rare earths, and aren't recycled. 50M metric tons e-waste by 2030, growing 5x faster than recycling. <em>This shifted the inquiry toward hardware circularity.</em></p>
+        <a href="https://notebooklm.google.com/notebook/1b717075-8a48-44d5-b7a8-748f1b885e68?authuser=2" target="_blank" class="meta" style="display: block;">NotebookLM — Notebook #2</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>Interaction #3 — Green AI vs Sustainable AI</summary>
+      <div>
+        <p class="body-sm"><strong>35 sources:</strong> WEF, S&amp;P Global, CompuCycle, MSCI, Google Sustainability, Brookings, arXiv.</p>
+        <p class="body-sm"><strong>Key takeaway:</strong> Discovered the distinction between <em>Green AI</em> (energy, water, carbon) and <em>Sustainable AI</em> (community impact, algorithmic fairness). Understood water withdrawal vs consumption — 70–80% of cooling water is consumed, not returned, creating a negative climate feedback loop.</p>
+        <a href="https://notebooklm.google.com/notebook/b5df237a-181f-4631-85ed-52fb778b65a9?authuser=2" target="_blank" class="meta" style="display: block;">NotebookLM — Notebook #3</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>Interactions #4–6 — Solutions &amp; Industry Tactics</summary>
+      <div>
+        <p class="body-sm"><strong>Solutions explored:</strong> EU Digital Product Passport, Circular ITAD, Microsoft Circular Centers, water-free cooling, Right to Repair, IRMA mining standards.</p>
+        <p class="body-sm"><strong>Key takeaway:</strong> Shifted from reading through NotebookLM to reading directly and using it for quizzing/flashcards. The core problem is structural and regulatory, not just technical.</p>
+      </div>
+    </details>
+
+    <div class="sublabel-row" style="margin-top: var(--sp-5);">
+      <span class="sublabel-row__label">Key Sources</span>
+      <span class="sublabel-row__rule" role="presentation"></span>
+    </div>
+    <div class="link-grid">
+      <a href="https://news.mit.edu/2025/explained-generative-ai-environmental-impact-0117" target="_blank" class="link-item">
+        <div class="link-item__title">MIT News</div>
+        Generative AI's Environmental Impact
+      </a>
+      <a href="https://unitar.org/about/news-stories/press/global-e-waste-monitor-2024-electronic-waste-rising-five-times-faster-documented-e-waste-recycling" target="_blank" class="link-item">
+        <div class="link-item__title">UN Report</div>
+        Global E-Waste Monitor 2024
+      </a>
+      <a href="https://www.weforum.org/stories/2025/11/ai-accelerate-energy-transition/" target="_blank" class="link-item">
+        <div class="link-item__title">WEF</div>
+        AI and the Energy Transition
+      </a>
+      <a href="https://www.spglobal.com/sustainable1/en/insights/special-editorial/beneath-the-surface-water-stress-in-data-centers" target="_blank" class="link-item">
+        <div class="link-item__title">S&amp;P Global</div>
+        Water Stress in Data Centers
+      </a>
+      <a href="https://compucycle.com/ai-hardware-refresh-crisis-itad-data-centers/" target="_blank" class="link-item">
+        <div class="link-item__title">CompuCycle</div>
+        AI Hardware Refresh Crisis
+      </a>
+      <a href="https://www.msci.com/research-and-insights/blog-post/when-ai-meets-water-scarcity-data-centers-in-a-thirsty-world" target="_blank" class="link-item">
+        <div class="link-item__title">MSCI</div>
+        Data Centers in a Thirsty World
+      </a>
+      <a href="https://arxiv.org/html/2502.01671v1" target="_blank" class="link-item">
+        <div class="link-item__title">arXiv</div>
+        Life-Cycle Emissions of AI Hardware
+      </a>
+      <a href="https://oneclicklca.com/en/resources/articles/digital-product-passport-whats-a-dpp" target="_blank" class="link-item">
+        <div class="link-item__title">DPP</div>
+        Digital Product Passport
+      </a>
+      <a href="https://sustainability.google/stories/circular-economy/" target="_blank" class="link-item">
+        <div class="link-item__title">Google</div>
+        Circular Economy at Google
+      </a>
+      <a href="https://www.lincolninst.edu/publications/land-lines-magazine/articles/land-water-impacts-data-centers/" target="_blank" class="link-item">
+        <div class="link-item__title">Lincoln Institute</div>
+        Land &amp; Water Impacts
+      </a>
+      <a href="https://www.brookings.edu/articles/local-implications-data-centers-rural-communities-us/" target="_blank" class="link-item">
+        <div class="link-item__title">Brookings</div>
+        Data Centers &amp; Rural Communities
+      </a>
+      <a href="https://www.researchgate.net/publication/387735635_Red_AI_vs_Green_AI_in_Education" target="_blank" class="link-item">
+        <div class="link-item__title">ResearchGate</div>
+        Red AI vs Green AI in Education
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-counter">
+      <span class="section-counter__number">03</span>
+      <span class="section-counter__label">Process &amp; Reflections</span>
+      <span class="section-counter__rule"></span>
+    </div>
+
+    <p class="body-sm" style="margin-bottom: var(--sp-5);">The inquiry evolved significantly across the quarter. Each reflection captures a conceptual shift — from broad research to specific systemic critique.</p>
+
+    <div class="grid-2" style="margin-bottom: var(--sp-5);">
+      <div class="card-bordered">
+        <span class="badge badge--earth" style="margin-bottom: var(--sp-2);">Week 6</span>
+        <h4 style="margin-bottom: var(--sp-2);">Progress Report #1</h4>
+        <p class="body-sm" style="margin: 0;">
+          Focused on the <em>why</em> — how data centers affect environment and economy. Realized the study plan needed restructuring. Learned that NotebookLM's deep research finds additional sources effectively, but specificity in prompts is critical to reduce hallucination.
+        </p>
+      </div>
+      <div class="card-bordered">
+        <span class="badge badge--teal" style="margin-bottom: var(--sp-2);">Week 7</span>
+        <h4 style="margin-bottom: var(--sp-2);">Progress Report #2</h4>
+        <p class="body-sm" style="margin: 0;">
+          Deeper into definitions and solutions. This project is more research-forward than typical building-with-AI projects. Tracking real progress vs Gemini's study plan revealed gaps in prompt specificity when generating structured timelines.
+        </p>
+      </div>
+    </div>
+
+    <div class="sublabel-row">
+      <span class="sublabel-row__label">Key Conceptual Shifts</span>
+      <span class="sublabel-row__rule" role="presentation"></span>
+    </div>
+
+    <div class="grid-3" style="margin-top: var(--sp-2);">
+      <div class="card card--teal">
+        <div class="data-row" style="padding-top: 0; border-bottom-color: var(--teal);">
+          <span class="data-row__label">Water</span>
+          <span class="data-row__value" style="color: var(--teal);">Consumption vs Withdrawal</span>
+        </div>
+        <p class="body-sm" style="margin: 0;">70–80% of cooling water is consumed, not returned. Evaporated water becomes greenhouse gas — a negative feedback loop where data centers contribute to the warming that forces more water use.</p>
+      </div>
+      <div class="card card--green">
+        <div class="data-row" style="padding-top: 0; border-bottom-color: var(--green);">
+          <span class="data-row__label">Framing</span>
+          <span class="data-row__value" style="color: var(--green);">Green AI vs Sustainable AI</span>
+        </div>
+        <p class="body-sm" style="margin: 0;">Green AI: energy, water, carbon. Sustainable AI: community impact, algorithmic fairness, governance. The distinction reframed the inquiry beyond just efficiency.</p>
+      </div>
+      <div class="card card--earth">
+        <div class="data-row" style="padding-top: 0; border-bottom-color: var(--earth);">
+          <span class="data-row__label">Hardware</span>
+          <span class="data-row__value" style="color: var(--earth);">Embodied Carbon</span>
+        </div>
+        <p class="body-sm" style="margin: 0;">Even with carbon-free energy, the embodied carbon in chips (copper, cobalt, rare earths, 1–3 year lifespan) remains massive. 50M tons e-waste by 2030 — this shifted focus to the Digital Product Passport and hardware circularity.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-counter">
+      <span class="section-counter__number">04</span>
+      <span class="section-counter__label">Visual Notes</span>
+      <span class="section-counter__rule"></span>
+    </div>
+
+    <p class="body-sm" style="margin-bottom: var(--sp-5);">Hand-drawn research sketches from information interactions. These document the thinking process — tracing system architectures, mapping relationships, and distilling complex ideas into visual form.</p>
+
+    <div class="grid-3">
+      <div class="image-frame">
+        <img src="STEP%203%20__%20Research%20Map%20+%20Information%20Interactions/IMG_1666.jpeg" alt="Hand-drawn visual note 1" style="border-bottom: 1px solid var(--border);">
+        <div class="image-frame__caption">Research sketch — AI infrastructure architecture</div>
+      </div>
+      <div class="image-frame">
+        <img src="STEP%203%20__%20Research%20Map%20+%20Information%20Interactions/IMG_1667.jpeg" alt="Hand-drawn visual note 2" style="border-bottom: 1px solid var(--border);">
+        <div class="image-frame__caption">Research sketch — System relationships diagram</div>
+      </div>
+      <div class="image-frame">
+        <img src="STEP%203%20__%20Research%20Map%20+%20Information%20Interactions/IMG_1670.jpeg" alt="Hand-drawn visual note 3" style="border-bottom: 1px solid var(--border);">
+        <div class="image-frame__caption">Research sketch — Environmental impact mapping</div>
+      </div>
+    </div>
+
+    <div class="image-frame" style="max-width: 300px; margin-top: var(--sp-3);">
+      <img src="STEP%203%20__%20Research%20Map%20+%20Information%20Interactions/Screenshot%202026-05-06%20at%204.25.11%E2%80%AFPM.png" alt="NotebookLM screenshot" style="border-bottom: 1px solid var(--border);">
+      <div class="image-frame__caption">NotebookLM — AI-generated study guide from sources</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-counter">
+      <span class="section-counter__number">05</span>
+      <span class="section-counter__label">Experiment Log — Flow Lab</span>
+      <span class="section-counter__rule"></span>
+    </div>
+
+    <p class="body-sm" style="margin-bottom: var(--sp-5);">AI image and video generation experiments using Google Flow (Veo). Learning to control style, iterate through prompts, and combine image + video generation pipelines.</p>
+
+    <details>
+      <summary>Day 1 — Risograph Werewolf (May 19) · <span class="badge badge--green">0 credits (images)</span> <span class="badge badge--teal">30 credits (video)</span></summary>
+      <div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Technique</th>
+              <th>Credits</th>
+              <th>Output</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-family: var(--font-mono); font-size: 12px;">1</td>
+              <td>Risograph werewolf poster (2-color, navy + fluorescent orange)</td>
+              <td>Free</td>
+              <td>Static image</td>
+            </tr>
+            <tr>
+              <td style="font-family: var(--font-mono); font-size: 12px;">2</td>
+              <td>4-color risograph forest scene (gold, red, black, electric blue)</td>
+              <td>Free</td>
+              <td>Static image</td>
+            </tr>
+            <tr>
+              <td style="font-family: var(--font-mono); font-size: 12px;">3</td>
+              <td>Animated werewolf walking from image #2 (Omni Flash)</td>
+              <td>30</td>
+              <td>10s video</td>
+            </tr>
+            <tr>
+              <td style="font-family: var(--font-mono); font-size: 12px;">4</td>
+              <td>Macro risograph detail — 3-color fluorescent print scan</td>
+              <td>Free</td>
+              <td>Static image</td>
+            </tr>
+            <tr>
+              <td style="font-family: var(--font-mono); font-size: 12px;">5</td>
+              <td>Image combination (2 photos) → angel animation in space</td>
+              <td>Free + credits</td>
+              <td>1 composite + 2 videos</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="banner banner--teal" style="margin-top: var(--sp-3);">
+          <div class="banner__slug">Insight</div>
+          <div class="banner__body">Gemini paid account gives free image generation — credits only used for video. Optimal pipeline: generate images for free, then animate with Flow.</div>
+        </div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Day 2 — Character Creation (May 20) · <span class="badge badge--green">0 credits</span></summary>
+      <div>
+        <div class="data-row">
+          <span class="data-row__label">Tool</span>
+          <span class="data-row__value">Nano Banana 2 → Nano Banana Pro (broke at iteration 15)</span>
+        </div>
+        <div class="data-row">
+          <span class="data-row__label">Iterations</span>
+          <span class="data-row__value">15 refinements</span>
+        </div>
+        <p class="body-sm" style="margin-top: var(--sp-3);"><strong>Process:</strong> Base prompt → skin hex #F3E9DC → eye colors (#091540 blue / #002500 green) → scar placement → eyebrow slit → werewolf ears. Each iteration pushed control precision further. The model broke when pushed past ~15 iterations — intentional boundary-probing.</p>
+        <div class="banner banner--earth" style="margin-top: var(--sp-2);">
+          <div class="banner__slug">Insight</div>
+          <div class="banner__body">Hex color codes give precise visual control. The model has a breaking point after ~15 refinement rounds — useful to know for production workflows.</div>
+        </div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Days 3–6 (May 21–24) — Planned</summary>
+      <div>
+        <p class="body-sm">Planning minimum 100 credits per section for generative video experiments. The strategy: use free image generation for assets, reserve credits for animation.</p>
+      </div>
+    </details>
+  </section>
+
+  <section class="section">
+    <div class="section-counter">
+      <span class="section-counter__number">06</span>
+      <span class="section-counter__label">Prompt Log</span>
+      <span class="section-counter__rule"></span>
+    </div>
+
+    <p class="body-sm" style="margin-bottom: var(--sp-5);">Four structured prompts for the interactive web project, each targeting a different interaction pattern. All use Gemini Pro with role-based priming.</p>
+
+    <div class="grid-2" style="margin-bottom: var(--sp-4);">
+      <div class="card card--green">
+        <span class="badge badge--green" style="margin-bottom: var(--sp-2);">Calculator</span>
+        <h4 style="margin-bottom: var(--sp-2);">"Cost of a Prompt"</h4>
+        <p class="body-sm" style="margin: 0;">Slider showing per-prompt cost in water, minerals, and carbon. CTA: "Demand Green AI Infrastructure."</p>
+      </div>
+      <div class="card card--teal">
+        <span class="badge badge--teal" style="margin-bottom: var(--sp-2);">Scorecard</span>
+        <h4 style="margin-bottom: var(--sp-2);">Corporate Transparency</h4>
+        <p class="body-sm" style="margin: 0;">CSS Grid comparing Google, Microsoft, Meta, OpenAI against 2026 EU DPP standards. Hover reveals "Demand Transparency" button.</p>
+      </div>
+      <div class="card card--earth">
+        <span class="badge badge--earth" style="margin-bottom: var(--sp-2);">Map</span>
+        <h4 style="margin-bottom: var(--sp-2);">Community Pushback</h4>
+        <p class="body-sm" style="margin: 0;">Two-column layout: map placeholder + Local Action Toolkit with zoning laws, NDAs, and City Council email template referencing the 2026 AI Data Center Transparency Act.</p>
+      </div>
+      <div class="card" style="border-left: 4px solid var(--text-secondary);">
+        <span class="badge badge--default" style="margin-bottom: var(--sp-2);">Timeline</span>
+        <h4 style="margin-bottom: var(--sp-2);">Right to Repair</h4>
+        <p class="body-sm" style="margin: 0;">Server lifecycle timeline (Mining → 2 years → 50M tons e-waste) + split-screen CTA for Right to Repair laws and EU DPP explainer.</p>
+      </div>
+    </div>
+
+    <details>
+      <summary>Entry 1 — Full Prompt</summary>
+      <div>
+        <div class="data-row">
+          <span class="data-row__label">Model</span>
+          <span class="data-row__value">Gemini Pro</span>
+        </div>
+        <p class="body-sm" style="margin-bottom: var(--sp-2);"><strong>Priming:</strong> "Act as an expert front-end web developer and UI designer."</p>
+        <p class="body-sm" style="margin-bottom: 0;"><strong>Specs:</strong> Slider 1–100 prompts/day. Three dynamic metrics: drops of water (1 bottle per 10–50 prompts), grams of rare-earth metals, grams of embodied carbon. CTA button. Responsive. Slightly alarming but professional tone.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Entry 2 — Full Prompt</summary>
+      <div>
+        <div class="data-row">
+          <span class="data-row__label">Model</span>
+          <span class="data-row__value">Gemini Pro</span>
+        </div>
+        <p class="body-sm" style="margin-bottom: 0;"><strong>Priming:</strong> "Act as a data-journalist and web developer." <strong>Specs:</strong> Four company cards with toggleable DPP metrics. Placeholder data. Hover interaction for "Demand Transparency" email button.</p>
+      </div>
+    </details>
+  </section>
+
+  <section class="section">
+    <div class="section-counter">
+      <span class="section-counter__number">07</span>
+      <span class="section-counter__label">Tools &amp; Learnings</span>
+      <span class="section-counter__rule"></span>
+    </div>
+
+    <div class="grid-3" style="margin-bottom: var(--sp-6);">
+      <div class="card" style="border-top: 3px solid var(--green);">
+        <div class="data-row" style="padding-top: 0;">
+          <span class="data-row__label">Tool</span>
+          <span class="data-row__value" style="color: var(--green);">NotebookLM</span>
+        </div>
+        <p class="body-sm" style="margin-bottom: 0;">Deep research adds 20–30 credible sources per session. Good for overviews, but AI sometimes misspells or misphrases — requires 2–3 clarification rounds. Quiz and flashcard features useful for synthesis. Best used as a thinking partner, not a research replacement.</p>
+      </div>
+      <div class="card" style="border-top: 3px solid var(--teal);">
+        <div class="data-row" style="padding-top: 0;">
+          <span class="data-row__label">Tool</span>
+          <span class="data-row__value" style="color: var(--teal);">Gemini Pro</span>
+        </div>
+        <p class="body-sm" style="margin-bottom: 0;">Prompt specificity directly reduces hallucination — vague prompts cost 2–3x more iterations. Paid account gives free image generation. Hex color codes enable precise visual control. Generating study plans works, but tracking real vs predicted progress reveals gaps.</p>
+      </div>
+      <div class="card" style="border-top: 3px solid var(--earth);">
+        <div class="data-row" style="padding-top: 0;">
+          <span class="data-row__label">Tool</span>
+          <span class="data-row__value" style="color: var(--earth);">Flow (Veo)</span>
+        </div>
+        <p class="body-sm" style="margin-bottom: 0;">10s video at 30 credits each. Image → animation pipeline works well. Risograph and specific art styles are achievable. Character creation has a ~15-iteration breaking point. Credit strategy: free for images, reserve for video.</p>
+      </div>
+    </div>
+
+    <div class="card-bordered">
+      <div class="sublabel-row" style="margin-top: 0;">
+        <span class="sublabel-row__label">Key Learnings</span>
+        <span class="sublabel-row__rule" role="presentation"></span>
+      </div>
+      <div class="data-row">
+        <span class="data-row__label">Research</span>
+        <span class="data-row__value" style="text-align: left; font-weight: 400;">NotebookLM deep research doubles source count but needs human filtering for reliability</span>
+      </div>
+      <div class="data-row">
+        <span class="data-row__label">AI Collaboration</span>
+        <span class="data-row__value" style="text-align: left; font-weight: 400;">Prompt specificity directly reduces hallucination — vague prompts cost 2–3x more iterations</span>
+      </div>
+      <div class="data-row">
+        <span class="data-row__label">Image Gen</span>
+        <span class="data-row__value" style="text-align: left; font-weight: 400;">Hex color codes give precise character control; model breaks after ~15 iterations of refinement</span>
+      </div>
+      <div class="data-row">
+        <span class="data-row__label">Video</span>
+        <span class="data-row__value" style="text-align: left; font-weight: 400;">Cheapest pipeline: generate images for free, animate with Flow at 30 credits/video</span>
+      </div>
+      <div class="data-row">
+        <span class="data-row__label">Inquiry Shift</span>
+        <span class="data-row__value" style="text-align: left; font-weight: 400;">Evolved from "how bad is it" to "what solutions exist" — hardware circularity and DPP are the real leverage points</span>
+      </div>
+      <div class="data-row" style="border-bottom: none; padding-bottom: 0;">
+        <span class="data-row__label">Final Direction</span>
+        <span class="data-row__value" style="text-align: left; font-weight: 400;">Interactive web, data diagram, or game — still deciding the right format for the complexity</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-counter">
+      <span class="section-counter__number">08</span>
+      <span class="section-counter__label">Workspace &amp; Materials</span>
+      <span class="section-counter__rule"></span>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <h4 style="margin-bottom: var(--sp-3);">Primary Workspaces</h4>
+        <div class="link-grid" style="grid-template-columns: 1fr;">
+          <a href="https://app.milanote.com" target="_blank" class="link-item">
+            <div class="link-item__title">Milanote Board</div>
+            Visual project organization — notes, images, links, research maps, process documentation
+          </a>
+          <a href="https://notebooklm.google.com" target="_blank" class="link-item">
+            <div class="link-item__title">NotebookLM</div>
+            AI research notebook — 3+ notebooks with deep research, source analysis, quizzes, flashcards
+          </a>
+          <a href="https://gemini.google.com" target="_blank" class="link-item">
+            <div class="link-item__title">Google Gemini</div>
+            Primary AI collaborator — prompt engineering, image generation, study plan generation
+          </a>
+          <a href="https://labs.google/fx/tools/flow" target="_blank" class="link-item">
+            <div class="link-item__title">Flow (Veo)</div>
+            AI video generation — image-to-animation pipeline, 30 credits/video
+          </a>
+        </div>
+      </div>
+      <div>
+        <h4 style="margin-bottom: var(--sp-3);">Quick Links</h4>
+        <div class="link-grid" style="grid-template-columns: 1fr;">
+          <a href="https://notebooklm.google.com/notebook/5adf3ecc-4766-42c6-b368-74aa5a1ec004/artifact/96737e33-7459-42d7-8e50-27374f4124c9" target="_blank" class="link-item">
+            <div class="link-item__title">Notebook #1</div>
+            AI Infrastructure Basics
+          </a>
+          <a href="https://notebooklm.google.com/notebook/1b717075-8a48-44d5-b7a8-748f1b885e68?authuser=2" target="_blank" class="link-item">
+            <div class="link-item__title">Notebook #2</div>
+            Energy, E-Waste & Embodied Carbon
+          </a>
+          <a href="https://notebooklm.google.com/notebook/b5df237a-181f-4631-85ed-52fb778b65a9?authuser=2" target="_blank" class="link-item">
+            <div class="link-item__title">Notebook #3</div>
+            Green AI & Solutions
+          </a>
+        </div>
+
+        <div class="sublabel-row" style="margin-top: var(--sp-5);">
+          <span class="sublabel-row__label">Working Files</span>
+          <span class="sublabel-row__rule" role="presentation"></span>
+        </div>
+        <ul style="margin-bottom: 0;">
+          <li><strong>Inquiry Brief</strong> — Research question, why it matters, learning needs, possible outcomes</li>
+          <li><strong>Progress Reports</strong> — Weekly documentation of process, obstacles, and next steps</li>
+          <li><strong>Prompt Log</strong> — Four structured prompts for interactive web components</li>
+          <li><strong>Experiment Log</strong> — Flow Lab image/video sessions with iteration documentation</li>
+          <li><strong>Visual Notes</strong> — Hand-drawn sketches and diagrams from research sessions (see section 04)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-counter">
+      <span class="section-counter__number">09</span>
+      <span class="section-counter__label">Next Steps</span>
+      <span class="section-counter__rule"></span>
+    </div>
+
+    <div class="banner banner--green" style="margin-bottom: var(--sp-5);">
+      <div class="banner__slug">Status</div>
+      <div class="banner__body">Research phase nearing completion. Transitioning into the build phase.</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card" style="border-left: 4px solid var(--green);">
+        <h4 style="margin-bottom: var(--sp-2);">Immediate</h4>
+        <ol style="margin-bottom: 0;">
+          <li><strong>Finalize research</strong> — Complete remaining information interactions and synthesize findings</li>
+          <li><strong>Choose format</strong> — Interactive web, data diagram, or game based on information complexity</li>
+          <li><strong>Establish visual foundations</strong> — Design system for the interactive project</li>
+        </ol>
+      </div>
+      <div class="card" style="border-left: 4px solid var(--teal);">
+        <h4 style="margin-bottom: var(--sp-2);">Build Phase</h4>
+        <ol style="margin-bottom: 0;">
+          <li><strong>Execute 4 prompts</strong> — Run each from the prompt log, iterate on generated code</li>
+          <li><strong>AI collaboration workflow</strong> — Establish efficient prompt → review → refine cycles</li>
+          <li><strong>Feedback loop</strong> — Does the topic sound too broad? Is it understandable? What should I focus on specifically?</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <footer style="padding: var(--sp-5) 0; border-top: 3px solid var(--text); margin-top: var(--sp-7);">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: var(--sp-3);">
+      <span class="meta">Green AI Data Centers — Studio Command Center</span>
+      <span class="meta">DESN 374 · AI + Design Studio · Spring 2026</span>
+    </div>
+  </footer>
+
+</main>
+
+</body>
+</html>
